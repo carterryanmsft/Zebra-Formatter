@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case ID Formatter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .input-section, .output-section {
+            margin-bottom: 30px;
+        }
+
+        .chunk-size-control {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+        }
+
+        .chunk-size-control label {
+            margin-bottom: 10px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .slider-container input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .chunk-size-display {
+            min-width: 80px;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border-radius: 6px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #input {
+            min-height: 150px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-format {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-format:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-clear {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-clear:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-copy {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-copy:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .output-chunk {
+            margin-bottom: 20px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .chunk-header {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chunk-header h3 {
+            color: #667eea;
+            font-size: 1em;
+        }
+
+        .chunk-copy {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .chunk-copy:hover {
+            background: #5568d3;
+        }
+
+        .chunk-content {
+            background: #f8f9fa;
+        }
+
+        .chunk-content pre {
+            margin: 0;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .stats {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #10b981;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .stats {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Case ID Formatter</h1>
+            <p>Transform support incident IDs into query-ready JSON format</p>
+        </div>
+
+        <div class="content">
+            <div class="chunk-size-control">
+                <label for="chunkSize">Chunk Size (Cases per Query):</label>
+                <div class="slider-container">
+                    <input type="range" id="chunkSize" min="1" max="200" value="80" oninput="updateChunkSizeDisplay()">
+                    <div class="chunk-size-display" id="chunkSizeDisplay">80</div>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <label for="input">Enter Case IDs (one per line or comma/space separated):</label>
+                <textarea id="input" placeholder="2410210030001150&#10;2509180050002527&#10;2509180050002653&#10;2509180050003694"></textarea>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-format" onclick="formatCaseIds()">🚀 Format Case IDs</button>
+                <button class="btn-clear" onclick="clearAll()">🗑️ Clear All</button>
+            </div>
+
+            <div id="statsContainer"></div>
+            <div id="output"></div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        function updateChunkSizeDisplay() {
+            const chunkSize = document.getElementById('chunkSize').value;
+            document.getElementById('chunkSizeDisplay').textContent = chunkSize;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        function formatCaseIds() {
+            const input = document.getElementById('input').value.trim();
+            
+            if (!input) {
+                showToast('⚠️ Please enter at least one case ID');
+                return;
+            }
+
+            // Extract case IDs from input (handles newlines, commas, spaces)
+            const caseIds = input
+                .split(/[\n,\s]+/)
+                .map(id => id.trim())
+                .filter(id => id.length > 0);
+
+            if (caseIds.length === 0) {
+                showToast('⚠️ No valid case IDs found');
+                return;
+            }
+
+            // Get chunk size from slider
+            const chunkSize = parseInt(document.getElementById('chunkSize').value);
+
+            // Split into chunks based on selected size
+            const chunks = [];
+            for (let i = 0; i < caseIds.length; i += chunkSize) {
+                chunks.push(caseIds.slice(i, i + chunkSize));
+            }
+
+            // Display stats
+            displayStats(caseIds.length, chunks.length);
+
+            // Generate output
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = '';
+
+            chunks.forEach((chunk, index) => {
+                const filterString = chunk
+                    .map(id => `CaseNumber eq '${id}'`)
+                    .join(' or ');
+
+                const jsonOutput = {
+                    "Search": "*",
+                    "SearchFields": "",
+                    "SearchMode": "any",
+                    "Filter": filterString,
+                    "Orderby": "",
+                    "QueryType": "simple",
+                    "Top": chunk.length
+                };
+
+                const formattedJson = JSON.stringify(jsonOutput, null, 2);
+
+                const chunkDiv = document.createElement('div');
+                chunkDiv.className = 'output-chunk';
+                chunkDiv.innerHTML = `
+                    <div class="chunk-header">
+                        <h3>Chunk ${index + 1} of ${chunks.length} (${chunk.length} case${chunk.length > 1 ? 's' : ''})</h3>
+                        <button class="chunk-copy" onclick="copyChunk(${index})">📋 Copy</button>
+                    </div>
+                    <div class="chunk-content">
+                        <pre id="chunk-${index}">${formattedJson}</pre>
+                    </div>
+                `;
+                outputDiv.appendChild(chunkDiv);
+            });
+
+            showToast('✅ Formatted successfully!');
+        }
+
+        function displayStats(totalCases, totalChunks) {
+            const chunkSize = parseInt(document.getElementById('chunkSize').value);
+            const statsContainer = document.getElementById('statsContainer');
+            statsContainer.innerHTML = `
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value">${totalCases}</div>
+                        <div class="stat-label">Total Cases</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${totalChunks}</div>
+                        <div class="stat-label">Chunk${totalChunks > 1 ? 's' : ''}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${chunkSize}</div>
+                        <div class="stat-label">Max per Chunk</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function copyChunk(index) {
+            const chunkContent = document.getElementById(`chunk-${index}`).textContent;
+            navigator.clipboard.writeText(chunkContent).then(() => {
+                showToast(`✅ Chunk ${index + 1} copied to clipboard!`);
+            }).catch(err => {
+                showToast('❌ Failed to copy');
+                console.error('Copy failed:', err);
+            });
+        }
+
+        function clearAll() {
+            document.getElementById('input').value = '';
+            document.getElementById('output').innerHTML = '';
+            document.getElementById('statsContainer').innerHTML = '';
+            showToast('🗑️ Cleared all content');
+        }
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('input');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.max(150, this.scrollHeight) + 'px';
+        });
+    </script>
+</body>
+</html>
